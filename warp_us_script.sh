@@ -28,16 +28,26 @@ reservedDec=$(printf '%s\n' "${reservedHex}" | while read -r hex; do printf "%d,
 reservedDec="[${reservedDec%, }]"
 reservedHex=$(echo "${reservedHex}" | awk 'BEGIN { ORS=""; print "0x" } { print }')
 
+# Заменить IP на сервер в США
 conf=$(cat <<-EOM
 {
-"mtu": 1280,
-"reserved": "${reserved64}",
-"private_key": "${priv}",
-"type": "wireguard",
-"local_address": ["${client_ipv4}/24", "${client_ipv6}/128"],
-"peer_public_key": "${peer_pub}",
-"server": "104.16.172.73",  # Заменил на IP Cloudflare с локацией в США
-"server_port": 51820
+  "outbounds": [
+    {
+      "tag": "WARP",
+      "reserved": "${reserved64}",
+      "mtu": 1280,
+      "fake_packets": "5-10",
+      "fake_packets_size": "40-100",
+      "fake_packets_delay": "20-250",
+      "fake_packets_mode": "m4",
+      "private_key": "${priv}",
+      "type": "wireguard",
+      "local_address": ["${client_ipv4}/24", "${client_ipv6}/128"],
+      "peer_public_key": "${peer_pub}",
+      "server": "104.16.0.58",  # IP сервера Cloudflare в США
+      "server_port": 51820  # Стандартный порт WireGuard
+    }
+  ]
 }
 EOM
 )
@@ -54,4 +64,3 @@ echo "Иногда конфиг сверху не полный или отсут
 echo -e "\n"
 echo "https://immalware.github.io/downloader.html?filename=WARP.conf&content=${conf_base64}"
 echo -e "\n"
-echo "Что-то не получилось? Есть вопросы? Пишите в чат: https://t.me/vpn_1_1_1_1_warp"
